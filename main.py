@@ -2,7 +2,7 @@ from random import shuffle
 
 from matplotlib import cm
 
-viridis = cm.get_cmap('winter')
+cmap = cm.get_cmap('winter')
 
 
 list_to_sort = list(range(30))
@@ -61,7 +61,7 @@ def print_annoted_arr(k_arr):
 def print_svg(k_arr):
     num_vals = len(k_arr.arr)
     colors = {
-        val: tuple(int(v * 255) for v in viridis(idx / (num_vals - 1)))[:3]
+        val: tuple(int(v * 255) for v in cmap(idx / (num_vals - 1)))[:3]
         for idx, val in enumerate(k_arr.arr)
     }
 
@@ -114,6 +114,7 @@ def print_svg(k_arr):
     """
     with open("output.html", "w+") as text_file:
         text_file.write(svg)
+
 
 
 # sorting
