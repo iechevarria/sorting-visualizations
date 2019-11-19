@@ -65,20 +65,53 @@ def get_macaroni_tangents(macaroni_1, macaroni_2):
     return tl1, tl2, tl3, tl4
 
 
+
+def circle_to_svg(c):
+    return f'<circle cx="{c.x}" cy="{c.y}" r="{c.radius}" fill="transparent" stroke="black"/>'
+
+
+
 if __name__=="__main__":
-    a = Macaroni(30, 30, 10, 15)
-    b = Macaroni(100, 100, 10, 15)
+    a = Macaroni(60, 60, 20, 30)
+    b = Macaroni(200, 200, 20, 30)
 
     tangent_lines = get_macaroni_tangents(a, b)
-
+    
     inner_svg = ''
+
+    for tl in tangent_lines:
+        p1, p2 = tl
+        x1, y1 = p1
+        x2, y2 = p2
+        inner_svg += f'''
+            <line x1="{round(x1, 2)}" y1="{round(y1, 2)}" 
+            x2="{round(x2, 2)}" y2="{round(y2, 2)}"
+            stroke-width="1" stroke="black"/>\n
+        '''
+    
+    inner_svg += circle_to_svg(a.inner)
+    inner_svg += circle_to_svg(a.outer)
+    inner_svg += circle_to_svg(b.inner)
+    inner_svg += circle_to_svg(b.outer)
+
+    inner_svg += f'''            
+        <line x1="178" y1="211.6" 
+        x2="82" y2="48.2"
+        stroke-width="10" stroke="pink" stroke-linecap="round"/>\n
+    '''
+    inner_svg += f'''<path d="
+        M 200 225
+        A 25 25 0 0 1 178 211.6
+        " fill="transparent" stroke="red" stroke-linecap="round"
+        stroke-width="10"/>
+    '''
 
     with open("tangent_test.html", "w+") as text_file:
         text_file.write(f"""
         <!DOCTYPE html>
         <html>
         <body>
-        <svg width="200" height="200">
+        <svg width="400" height="400">
         {inner_svg}
         </svg>
         </body>

@@ -91,18 +91,17 @@ def print_svg(k_arr):
         for preidx, val in enumerate(pre):
             r, g, b = colors[val]
             postidx = post.index(val)
-            x1 = preidx * spacing + (preidx) * line_width 
+            x1 = preidx * spacing + (preidx + 1) * line_width
             y1 = idx * line_height
-            x2 = preidx * spacing + (preidx + 1) * line_width
-            y2 = idx * line_height
-            x3 = postidx * spacing + (postidx + 1) * line_width
-            y3 = (idx + 1) * line_height
-            x4 = postidx * spacing + (postidx) * line_width
-            y4 = (idx + 1) * line_height
+            x2 = postidx * spacing + (postidx + 1) * line_width
+            y2 = (idx + 1) * line_height
 
             paths = (
-                f'<path d="M {x1},{y1} L {x2},{y2} L {x3},{y3} L {x4},{y4}' 
-                f'L {x1},{y1} z" fill="rgba({r},{g},{b},1.0)"/>\n'
+                f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"'
+                'stroke="white" stroke-width="12" />'
+                f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"'
+                f'stroke="rgba({r},{g},{b},1.0)" stroke-linecap="round"'
+                'stroke-width="10" />' 
             ) + paths
 
         svg += paths
