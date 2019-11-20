@@ -1,5 +1,6 @@
 import math
 
+
 class Circle:
     def __init__(self, x, y, radius):
         self.x = x
@@ -7,18 +8,11 @@ class Circle:
         self.radius = radius
 
 
-
-def create_macaroni(x, y, r1, r2):
-    r = (r1 + r2) / 2
-    return Circle(x, y, r)
-
-
-
 def get_inner_tangent_points(xp, yp, x, y, r):
     # equations from http://www.ambrsoft.com/TrigoCalc/Circles2/Circles2Tangent_.htm
 
     xp_a = xp - x
-    yp_b = yp - x
+    yp_b = yp - y
     xp_a_2 = xp_a ** 2
     yp_b_2 = yp_b ** 2
     r_2 = r ** 2
@@ -40,7 +34,6 @@ def get_inner_tangent_points(xp, yp, x, y, r):
     return (xt1, yt1), (xt2, yt2)
 
 
-
 def get_inner_tangents(c1, c2):
     # equations from http://www.ambrsoft.com/TrigoCalc/Circles2/Circles2Tangent_.htm
 
@@ -50,7 +43,7 @@ def get_inner_tangents(c1, c2):
     d = c2.y
     r0 = c1.radius
     r1 = c2.radius
-    
+
     xp = (a * r0 + c * r1) / (r0 + r1)
     yp = (b * r0 + d * r1) / (r0 + r1)
 
@@ -60,97 +53,119 @@ def get_inner_tangents(c1, c2):
     return (c1t1, c2t1), (c1t2, c2t2)
 
 
-
 def circle_to_svg(c):
-    return f'<circle cx="{c.x}" cy="{c.y}" r="{c.radius}" fill="transparent" stroke="black"/>'
+    return f"""
+        <circle
+            cx="{c.x}"
+            cy="{c.y}"
+            r="{c.radius}"
+            fill="transparent"
+            stroke="black"
+        />
+    """
 
 
-
-def line_to_svg(pt1, pt2):
+def line_to_svg(pt1, pt2, stroke_width=10, stroke_color="red", stroke_linecap="round"):
     x1, y1 = pt1
     x2, y2 = pt2
-    return f'''
-        <line x1="{round(x1, 4)}" y1="{round(y1, 4)}" 
-        x2="{round(x2, 4)}" y2="{round(y2, 4)}"
-        stroke-width="1" stroke="black"/>\n>
-    '''
+
+    return f"""
+        <line 
+            x1="{round(x1, 4)}" y1="{round(y1, 4)}"
+            x2="{round(x2, 4)}" y2="{round(y2, 4)}"
+            stroke="{stroke_color}"
+            stroke-width="{stroke_width}"
+            stroke-linecap="{stroke_linecap}"
+        />
+    """
 
 
-
-def arc_to_svg(pt1, pt2, r, case='lr'):
+def arc_to_svg(
+    pt1, pt2, r, arc_flag, stroke_width=10, stroke_color="red", stroke_linecap="round"
+):
     x1, y1 = pt1
     x2, y2 = pt2
-    arc_flag = 0 if case == 'lr' else 1
 
-    return f'''
-        <path d="
-            M {round(x1, 4)} {round(y1, 4)}
-            A {r} {r} 0 0 {arc_flag} {round(x2, 4)} {round(y2, 4)}" 
-        fill="transparent" stroke="red" stroke-linecap="round"
-        stroke-width="10"/>
-    '''
-    inner_svg += f'''
-    '''
+    return f"""
+        <path 
+            d="
+                M {round(x1, 4)} {round(y1, 4)}
+                A {r} {r} 0 0 {arc_flag} {round(x2, 4)} {round(y2, 4)}
+            "
+            fill="transparent" 
+            stroke="{stroke_color}"
+            stroke-linecap="{stroke_linecap}"
+            stroke-width="{stroke_width}"
+        />
+    """
 
 
-
-def choose_tangent_line(tl1, tl2, case='lr'):
-    # this is pretty hacky, it should really be done relative to line that 
-    # passes through the center of both circles. I just have the luxury of 
+def choose_tangent_line(tl1, tl2):
+    # this is pretty hacky, it should really be done relative to line that
+    # passes through the center of both circles. I just have the luxury of
     # never running into edge cases.
-    if case=='lr':
-        return tl1 if tl1[0] < tl2[0] else tl2
-    else:
-        return tl1 if tl1[0] > tl2[0] else tl2
+    return tl1 if tl1[0] < tl2[0] else tl2
 
 
+def get_double_macaroni_connection_svg(
+    x1,
+    y1,
+    x2,
+    y2,
+    radius,
+    stroke_width=10,
+    stroke_color="red",
+    stroke_linecap="round",
+    display_circles=False,
+):
+    radius_midpoint = radius + (stroke_width / 2)
+    a = Circle(x1 + radius_midpoint, y1, radius_midpoint)
+    b = Circle(x2 - radius_midpoint, y2, radius_midpoint)
 
-def get_arc_termini(c1, c2, case='lr'):
-    if case=='lr':
-        return (
-            (c1.x - c1.radius, c1.y),
-            (c2.x + c2.radius, c2.y)
-        )
-    else:
-        return (
-            (c1.x + c1.radius, c1.y),
-            (c2.x - c2.radius, c2.y)
-        )
-
-
-
-if __name__=="__main__":
-    a = create_macaroni(60, 60, 20, 30)
-    b = create_macaroni(200, 200, 20, 30)
-    # b = create_macaroni(200, 60, 20, 30)
-    # a = create_macaroni(60, 200, 20, 30)
-
-    case = 'lr'
+    arc_flag = int(a.y > b.y)
 
     tangent_lines = get_inner_tangents(a, b)
-    inner_svg = ''
-    
-    print(tangent_lines)
 
-    p1, p2 = choose_tangent_line(tangent_lines[0], tangent_lines[1], case)
-    inner_svg += line_to_svg(p1, p2)
+    p1, p2 = choose_tangent_line(tangent_lines[0], tangent_lines[1])
 
-    inner_svg += circle_to_svg(a)
-    inner_svg += circle_to_svg(b)
+    svg = ""
+    if display_circles:
+        svg += circle_to_svg(a) + circle_to_svg(b)
 
-    at1, at2 = get_arc_termini(a, b, case)
+    svg += line_to_svg(p1, p2, stroke_width, stroke_color, stroke_linecap)
+    svg += arc_to_svg(
+        (x1, y1), p1, a.radius, arc_flag, stroke_width, stroke_color, stroke_linecap
+    )
+    svg += arc_to_svg(
+        (x2, y2), p2, b.radius, arc_flag, stroke_width, stroke_color, stroke_linecap
+    )
 
-    inner_svg += arc_to_svg(at1, p1, a.radius, case)
-    inner_svg += arc_to_svg(at2, p2, b.radius, case)
+    return svg
+
+
+if __name__ == "__main__":
+    inner_svg = ""
+    inner_svg += get_double_macaroni_connection_svg(
+        x1=60,
+        y1=60,
+        x2=200,
+        y2=200,
+        radius=50,
+        stroke_width=30,
+        stroke_color="red",
+        stroke_linecap="flat",
+    )
 
     with open("tangent_test.html", "w+") as text_file:
-        text_file.write(f"""
-            <!DOCTYPE html>
-            <html>
-            <body>
-            <svg width="400" height="400">
-            {inner_svg}
-            </svg>
-            </body>
-            </html>
-        """)
+        text_file.write(
+            f"""
+                <!DOCTYPE html>
+                <html>
+                <body>
+                <svg width="400" height="400">
+                {inner_svg}
+                </svg>
+                </body>
+                </html>
+            """
+        )

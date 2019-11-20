@@ -2,7 +2,7 @@ from random import shuffle
 
 from matplotlib import cm
 
-cmap = cm.get_cmap('winter')
+cmap = cm.get_cmap("winter")
 
 
 list_to_sort = list(range(30))
@@ -10,27 +10,23 @@ shuffle(list_to_sort)
 
 
 # data
-class knowledge_arr():
+class knowledge_arr:
     def __init__(self, arr):
         self.arr = arr
         self.looking_idxs = set()
         self.length = len(arr)
         self.arr_history = [arr.copy()]
 
-
     def get(self, idx):
         self.looking_idxs.add(idx)
         return self.arr[idx]
 
-
     def gt(self, idx1, idx2):
         return self.get(idx1) > self.get(idx2)
-
 
     def reset(self):
         self.looking_idxs = set()
 
-    
     def swap(self, idx1, idx2):
         self.looking_idxs.add(idx1)
         self.looking_idxs.add(idx2)
@@ -42,19 +38,22 @@ class knowledge_arr():
 
 # display stuff
 def underline_all_chars(str_):
-    ret = ''
+    ret = ""
     for char in str_:
-        ret += '\u0332' + char 
+        ret += "\u0332" + char
 
     return ret
 
 
 def print_annoted_arr(k_arr):
     print(
-        ' ' + ' '.join([
-            underline_all_chars(str(t)) if idx in k_arr.looking_idxs else str(t)
-            for idx, t in enumerate(k_arr.arr)
-        ])
+        " "
+        + " ".join(
+            [
+                underline_all_chars(str(t)) if idx in k_arr.looking_idxs else str(t)
+                for idx, t in enumerate(k_arr.arr)
+            ]
+        )
     )
 
 
@@ -86,7 +85,7 @@ def print_svg(k_arr):
     for idx, tup in enumerate(zip(padded_history, padded_history[1:])):
         pre, post = tup
 
-        paths = ''
+        paths = ""
 
         for preidx, val in enumerate(pre):
             r, g, b = colors[val]
@@ -101,7 +100,7 @@ def print_svg(k_arr):
                 'stroke="white" stroke-width="12" />'
                 f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"'
                 f'stroke="rgba({r},{g},{b},1.0)" stroke-linecap="round"'
-                'stroke-width="10" />' 
+                'stroke-width="10" />'
             ) + paths
 
         svg += paths
@@ -115,7 +114,6 @@ def print_svg(k_arr):
         text_file.write(svg)
 
 
-
 # sorting
 def sort_thing(thing):
     i = 1
@@ -127,19 +125,17 @@ def sort_thing(thing):
             print_annoted_arr(thing)
             thing.reset()
 
-            thing.swap(j, j-1)
+            thing.swap(j, j - 1)
             j -= 1
 
             print_annoted_arr(thing)
             thing.reset()
 
-        i += 1    
+        i += 1
         print_annoted_arr(thing)
-
 
     print_svg(thing)
 
 
-
-if __name__=='__main__':
+if __name__ == "__main__":
     sort_thing(knowledge_arr(list_to_sort))
