@@ -90,7 +90,7 @@ def arc_to_svg(
         <path 
             d="
                 M {round(x1, 4)} {round(y1, 4)}
-                A {r} {r} 0 0 {arc_flag} {round(x2, 4)} {round(y2, 4)}
+                A {round(r, 4)} {round(r, 4)} 0 0 {arc_flag} {round(x2, 4)} {round(y2, 4)}
             "
             fill="transparent" 
             stroke="{stroke_color}"
@@ -118,26 +118,42 @@ def get_double_macaroni_connection_svg(
     stroke_linecap="round",
     display_circles=False,
 ):
+    # make sure we're drawing from left to right (this is a shortcut)
+    if x1 < x2:
+        ax, ay, bx, by = x1, y1, x2, y2
+    else:
+        ax, ay, bx, by = x2, y2, x1, y1
+
     radius_midpoint = radius + (stroke_width / 2)
-    a = Circle(x1 + radius_midpoint, y1, radius_midpoint)
-    b = Circle(x2 - radius_midpoint, y2, radius_midpoint)
+    a = Circle(ax + radius_midpoint, ay, radius_midpoint)
+    b = Circle(bx - radius_midpoint, by, radius_midpoint)
 
     arc_flag = int(a.y > b.y)
 
     tangent_lines = get_inner_tangents(a, b)
-
     p1, p2 = choose_tangent_line(tangent_lines[0], tangent_lines[1])
 
     svg = ""
+
     if display_circles:
         svg += circle_to_svg(a) + circle_to_svg(b)
 
-    svg += line_to_svg(p1, p2, stroke_width, stroke_color, stroke_linecap)
+    # background
+    svg += line_to_svg(p1, p2, stroke_width * 1.25, "white", "round")
     svg += arc_to_svg(
-        (x1, y1), p1, a.radius, arc_flag, stroke_width, stroke_color, stroke_linecap
+        (ax, ay), p1, a.radius, arc_flag, stroke_width * 1.25, "white", "flat"
     )
     svg += arc_to_svg(
-        (x2, y2), p2, b.radius, arc_flag, stroke_width, stroke_color, stroke_linecap
+        (bx, by), p2, b.radius, arc_flag, stroke_width * 1.25, "white", "flat"
+    )
+
+    # foreground
+    svg += line_to_svg(p1, p2, stroke_width, stroke_color, stroke_linecap)
+    svg += arc_to_svg(
+        (ax, ay), p1, a.radius, arc_flag, stroke_width, stroke_color, stroke_linecap
+    )
+    svg += arc_to_svg(
+        (bx, by), p2, b.radius, arc_flag, stroke_width, stroke_color, stroke_linecap
     )
 
     return svg

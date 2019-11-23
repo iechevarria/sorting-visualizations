@@ -1,141 +1,159 @@
-from random import shuffle
+from macaroni import get_double_macaroni_connection_svg
+
+import random
 
 from matplotlib import cm
 
-cmap = cm.get_cmap("winter")
+cmap = cm.get_cmap("plasma_r")
 
 
-list_to_sort = list(range(30))
-shuffle(list_to_sort)
 
-
-# data
-class knowledge_arr:
-    def __init__(self, arr):
-        self.arr = arr
-        self.looking_idxs = set()
-        self.length = len(arr)
-        self.arr_history = [arr.copy()]
-
-    def get(self, idx):
-        self.looking_idxs.add(idx)
-        return self.arr[idx]
-
-    def gt(self, idx1, idx2):
-        return self.get(idx1) > self.get(idx2)
-
-    def reset(self):
-        self.looking_idxs = set()
-
-    def swap(self, idx1, idx2):
-        self.looking_idxs.add(idx1)
-        self.looking_idxs.add(idx2)
-        tmp = self.arr[idx1]
-        self.arr[idx1] = self.arr[idx2]
-        self.arr[idx2] = tmp
-        self.arr_history.append(self.arr.copy())
-
-
-# display stuff
-def underline_all_chars(str_):
-    ret = ""
-    for char in str_:
-        ret += "\u0332" + char
-
-    return ret
-
-
-def print_annoted_arr(k_arr):
-    print(
-        " "
-        + " ".join(
-            [
-                underline_all_chars(str(t)) if idx in k_arr.looking_idxs else str(t)
-                for idx, t in enumerate(k_arr.arr)
-            ]
-        )
-    )
-
-
-def print_svg(k_arr):
-    num_vals = len(k_arr.arr)
+def print_svg(history, filename):
+    num_vals = len(history[0])
     colors = {
         val: tuple(int(v * 255) for v in cmap(idx / (num_vals - 1)))[:3]
-        for idx, val in enumerate(k_arr.arr)
+        for idx, val in enumerate(history[-1])
     }
 
     # pad history at the beginning and end to make my life easier
-    padded_history = k_arr.arr_history.copy()
+    padded_history = history.copy()
     padded_history.insert(0, padded_history[0])
     padded_history.append(padded_history[-1])
 
-    spacing = 2
+    # set up some params
+    spacing = 3
     line_width = 10
-    line_height = 40
-    total_width = (num_vals + 1) * spacing + num_vals * line_width
-    total_height = (len(padded_history) - 1) * line_height
+    line_height = 50
+    curve_radius = line_height / 5
+    total_width = (num_vals + 2) * spacing + num_vals * line_width
+    total_height = len(padded_history) * line_height
 
-    svg = f"""
-        <!DOCTYPE html>
-        <html>
-        <body>
-        <svg width="{total_width}" height="{total_height}">
-    """
+    svg = ""
 
     for idx, tup in enumerate(zip(padded_history, padded_history[1:])):
         pre, post = tup
 
-        paths = ""
+        swap_paths = ""
+        straight_paths = ""
 
         for preidx, val in enumerate(pre):
             r, g, b = colors[val]
             postidx = post.index(val)
+
             x1 = preidx * spacing + (preidx + 1) * line_width
-            y1 = idx * line_height
+            y1 = (idx + 0.25) * line_height
             x2 = postidx * spacing + (postidx + 1) * line_width
-            y2 = (idx + 1) * line_height
+            y2 = (idx + 1.25) * line_height
 
-            paths = (
-                f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"'
-                'stroke="white" stroke-width="12" />'
-                f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"'
-                f'stroke="rgba({r},{g},{b},1.0)" stroke-linecap="round"'
-                'stroke-width="10" />'
-            ) + paths
+            stroke_color = f"rgba({r},{g},{b},1.0)"
 
-        svg += paths
+            if preidx == postidx:
+                straight_paths = (
+                    f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"'
+                    f'stroke="{stroke_color}" stroke-linecap="round"'
+                    'stroke-width="10" />'
+                ) + straight_paths
 
-    svg += """
-        </svg>
-        </body>
-        </html>
-    """
-    with open("output.html", "w+") as text_file:
-        text_file.write(svg)
+            else:
+                swap_paths = (
+                    get_double_macaroni_connection_svg(
+                        x1, y1, x2, y2, curve_radius, stroke_color=stroke_color
+                    )
+                    + swap_paths
+                )
+
+        svg += straight_paths + swap_paths
+
+    with open(f"{filename}.html", "w+") as text_file:
+        text_file.write(
+            f"""
+                <!DOCTYPE html>
+                <html>
+                <body>
+                <svg width="{total_width}" height="{total_height}">
+                {svg}
+                </svg>
+                </body>
+                </html>
+            """
+        )
 
 
-# sorting
-def sort_thing(thing):
+
+def swap(history, idx1, idx2):
+
+    arr = history[-1].copy()
+    tmp = arr[idx1]
+    arr[idx1] = arr[idx2]
+    arr[idx2] = tmp
+
+    return history + [arr]
+
+
+
+def insertion_sort(arr):
     i = 1
 
-    while i < thing.length:
-        thing.reset()
+    while i < len(arr[0]):
         j = i
-        while j > 0 and thing.gt(j - 1, j):
-            print_annoted_arr(thing)
-            thing.reset()
+        while j > 0 and arr[-1][j - 1] > arr[-1][j]:
+            arr = swap(arr, j, j - 1)
+            j -= 1
+        i += 1
 
-            thing.swap(j, j - 1)
+    print_svg(arr, "insertion_sort")
+
+
+def bubble_sort(arr):
+    flag = True
+    while flag:
+        flag = False
+        for i in range(len(arr[-1]) - 1):
+            if arr[-1][i] > arr[-1][i + 1]:
+                arr = swap(arr, i, i + 1)
+                flag = True
+
+    print_svg(arr, "bubble_sort")
+
+
+def partition(arr, history, low, high):
+    pivot = arr[low]
+    i = low - 1
+    j = high + 1
+    while True:
+        i += 1
+        while arr[i] < pivot:
+            i += 1
+
+        j -= 1
+        while arr[j] > pivot:
             j -= 1
 
-            print_annoted_arr(thing)
-            thing.reset()
+        if i >= j:
+            return j
 
-        i += 1
-        print_annoted_arr(thing)
+        arr[i], arr[j] = arr[j], arr[i]
+        history.append(arr.copy())
 
-    print_svg(thing)
+
+def quicksort(arr, history, low, high):
+    if low < high:
+        split_index = partition(arr, history, low, high)
+        quicksort(arr, history, low, split_index)
+        quicksort(arr, history, split_index + 1, high)
+
+
+def quicksort_svg(arr):
+    history = [arr.copy()]
+    quicksort(list_to_sort, history, 0, len(arr) - 1)
+    print_svg(history, "quicksort")
 
 
 if __name__ == "__main__":
-    sort_thing(knowledge_arr(list_to_sort))
+    list_length = 40
+    list_to_sort = list(range(list_length))
+    random.Random(10).shuffle(list_to_sort)
+
+    insertion_sort([list_to_sort[:20]])
+    bubble_sort([list_to_sort[:20]])
+    quicksort_svg(list_to_sort)

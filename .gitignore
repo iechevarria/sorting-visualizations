@@ -1,0 +1,6 @@
+*.pyc
+*.html
+
+settings.json
+
+!sample_output.html
