@@ -1,9 +1,13 @@
 import random
-from math import pi
+from itertools import chain
 
 from matplotlib import cm
 
 from macaroni import get_double_macaroni_connection_svg
+
+
+def unnest_svg_list(svg_list):
+    return "\n".join(list(chain(*svg_list)))
 
 
 def print_svg(history, filename):
@@ -27,6 +31,7 @@ def print_svg(history, filename):
     line_height = 24
     y_offset = line_width / 2
 
+    # compute svg dimensions
     total_width = (num_vals) * spacing + num_vals * line_width
     total_height = (len(padded_history) - 1) * line_height + 2 * y_offset
 
@@ -36,50 +41,79 @@ def print_svg(history, filename):
     min_curve_radius = (line_height - line_width) / min_curve_radius_denominator
     curve_radius_delta = max_curve_radius - min_curve_radius
 
-    svg = ""
+    # transform the padded history into something a little more useful 
+    movements = {
+        val: [(arr.index(val), i) for i, arr in enumerate(padded_history)]
+        for val in padded_history[0]
+    }
+    swaps = {
+        val: (
+            [((None, None), movement[0])]
+            + [(a, b) for a, b in zip(movement, movement[1:]) if a[0] != b[0]]
+            + [(movement[-1], (None, None))]
+        )
+        for val, movement in movements.items()
+    }
+    straights = {
+        val: [(a[1], b[0]) for a, b in zip(swap, swap[1:]) if a[1] != b[0]]
+        for val, swap in swaps.items()
+    }
 
-    for idx, tup in enumerate(zip(padded_history, padded_history[1:])):
-        pre, post = tup
+    def get_drawing_coords(coords):
+        p1, p2 = coords
+        x1, y1 = p1
+        x2, y2 = p2
 
-        swap_paths = ""
-        straight_paths = ""
+        xa1 = x1 * spacing + (x1 + 0.5) * line_width
+        ya1 = y1 * line_height + y_offset
+        xa2 = x2 * spacing + (x2 + 0.5) * line_width
+        ya2 = y2 * line_height + y_offset
 
-        for preidx, val in enumerate(pre):
-            r, g, b = colors[val]
-            postidx = post.index(val)
+        return xa1, ya1, xa2, ya2
 
-            x1 = preidx * spacing + (preidx + 0.5) * line_width
-            y1 = idx * line_height + y_offset
-            x2 = postidx * spacing + (postidx + 0.5) * line_width
-            y2 = (idx + 1) * line_height + y_offset
+    def get_color(val):
+        r, g, b = colors[val]
+        return f"rgba({r},{g},{b},1.0)"
 
-            stroke_color = f"rgba({r},{g},{b},1.0)"
+    def make_straight_path(val, coords):
+        x1, y1, x2, y2 = get_drawing_coords(coords)
+        stroke_color = get_color(val)
+        return (
+            f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"'
+            f'stroke="{stroke_color}" stroke-linecap="round"'
+            f'stroke-width="{line_width}" />'
+        )
 
-            if preidx == postidx:
-                straight_paths = (
-                    f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"'
-                    f'stroke="{stroke_color}" stroke-linecap="round"'
-                    f'stroke-width="{line_width}" />'
-                ) + straight_paths
+    def make_curved_path(val, coords):
+        x1, y1, x2, y2 = get_drawing_coords(coords)
+        stroke_color = get_color(val)
 
-            else:
-                distance = abs(preidx - postidx)
-                curve_radius = min_curve_radius + curve_radius_delta / distance
+        distance = abs(coords[0][0] - coords[1][0])
+        curve_radius = min_curve_radius + curve_radius_delta / distance
 
-                swap_paths = (
-                    get_double_macaroni_connection_svg(
-                        x1,
-                        y1,
-                        x2,
-                        y2,
-                        curve_radius,
-                        stroke_width=line_width,
-                        stroke_color=stroke_color,
-                    )
-                    + swap_paths
-                )
+        return get_double_macaroni_connection_svg(
+            x1,
+            y1,
+            x2,
+            y2,
+            curve_radius,
+            stroke_width=line_width,
+            stroke_color=stroke_color,
+        )
 
-        svg = straight_paths + svg + swap_paths
+    # actually make the svgs
+    straight_paths = unnest_svg_list(
+        [
+            [make_straight_path(val, coord) for coord in coords]
+            for val, coords in straights.items()
+        ]
+    )
+    curved_paths = unnest_svg_list(
+        [
+            [make_curved_path(val, coord) for coord in coords[1:-1]]
+            for val, coords in swaps.items()
+        ]
+    )
 
     with open(f"{filename}.html", "w+") as text_file:
         text_file.write(
@@ -88,7 +122,7 @@ def print_svg(history, filename):
                 <html>
                 <body>
                 <svg width="{total_width}" height="{total_height}">
-                {svg}
+                {straight_paths + curved_paths}
                 </svg>
                 </body>
                 </html>

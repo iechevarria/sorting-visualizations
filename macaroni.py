@@ -70,7 +70,7 @@ def line_to_svg(pt1, pt2, stroke_width=10, stroke_color="red", stroke_linecap="r
     x2, y2 = pt2
 
     return f"""
-        <line 
+        <line
             x1="{round(x1, 4)}" y1="{round(y1, 4)}"
             x2="{round(x2, 4)}" y2="{round(y2, 4)}"
             stroke="{stroke_color}"
@@ -87,12 +87,12 @@ def arc_to_svg(
     x2, y2 = pt2
 
     return f"""
-        <path 
+        <path
             d="
                 M {round(x1, 4)} {round(y1, 4)}
                 A {round(r, 4)} {round(r, 4)} 0 0 {arc_flag} {round(x2, 4)} {round(y2, 4)}
             "
-            fill="transparent" 
+            fill="transparent"
             stroke="{stroke_color}"
             stroke-linecap="{stroke_linecap}"
             stroke-width="{stroke_width}"
