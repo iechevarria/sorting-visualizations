@@ -1,4 +1,3 @@
 *.pyc
 *.html
-
-settings.json
+*.vscode

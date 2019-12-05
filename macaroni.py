@@ -116,6 +116,7 @@ def get_double_macaroni_connection_svg(
     stroke_width=10,
     stroke_color="red",
     stroke_linecap="round",
+    outline_width=1.5,
     display_circles=False,
 ):
     # make sure we're drawing from left to right (this is a shortcut)
@@ -139,12 +140,12 @@ def get_double_macaroni_connection_svg(
         svg += circle_to_svg(a) + circle_to_svg(b)
 
     # background
-    svg += line_to_svg(p1, p2, stroke_width * 1.25, "white", "round")
+    svg += line_to_svg(p1, p2, stroke_width + outline_width, "white", "round")
     svg += arc_to_svg(
-        (ax, ay), p1, a.radius, arc_flag, stroke_width * 1.25, "white", "flat"
+        (ax, ay), p1, a.radius, arc_flag, stroke_width + outline_width, "white", "flat"
     )
     svg += arc_to_svg(
-        (bx, by), p2, b.radius, arc_flag, stroke_width * 1.25, "white", "flat"
+        (bx, by), p2, b.radius, arc_flag, stroke_width + outline_width, "white", "flat"
     )
 
     # foreground
