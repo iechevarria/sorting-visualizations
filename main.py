@@ -101,7 +101,7 @@ def quicksort_hoare_svg(arr):
 
 
 if __name__ == "__main__":
-    list_length = 30
+    list_length = 20
     list_to_sort = list(range(list_length))
     random.Random(777).shuffle(list_to_sort)
 
