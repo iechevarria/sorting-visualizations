@@ -1,8 +1,7 @@
+
                 <svg
-                    version="1.1"
-                    baseProfile="full"
-                    width="160"
-                    height="534.0"
+                    role="img"
+                    viewBox="0 0 534.0 160"
                     xmlns="http://www.w3.org/2000/svg">
                         <line x1="3.0" y1="3.0" x2="3.0" y2="27.0"stroke="rgba(254,199,139,1.0)" stroke-linecap="round"stroke-width="6" />
 <line x1="11.0" y1="75.0" x2="11.0" y2="531.0"stroke="rgba(254,199,139,1.0)" stroke-linecap="round"stroke-width="6" />

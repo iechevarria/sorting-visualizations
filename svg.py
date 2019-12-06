@@ -167,10 +167,8 @@ def generate(
         text_file.write(
             f"""
                 <svg
-                    version="1.1"
-                    baseProfile="full"
-                    width="{total_width}"
-                    height="{total_height}"
+                    role="img"
+                    viewBox="0 0 {total_height} {total_width}"
                     xmlns="http://www.w3.org/2000/svg">
                         {straight_paths + under_swap_paths + over_swap_paths}
                 </svg>
