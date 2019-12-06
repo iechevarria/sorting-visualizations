@@ -163,16 +163,11 @@ def generate(
     total_width = (num_vals) * spacing + num_vals * line_width
     total_height = (len(history) + 1) * line_height + 2 * y_offset
 
-    with open(f"{filename}.html", "w+") as text_file:
+    with open(f"{filename}.svg", "w+") as text_file:
         text_file.write(
             f"""
-                <!DOCTYPE html>
-                <html>
-                <body>
                 <svg width="{total_width}" height="{total_height}">
                 {straight_paths + under_swap_paths + over_swap_paths}
                 </svg>
-                </body>
-                </html>
             """
         )

@@ -1,3 +1,6 @@
-*.pyc
 *.html
+*.pyc
+*.svg
 *.vscode
+
+!sample_output.svg
