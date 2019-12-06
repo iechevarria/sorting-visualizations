@@ -71,8 +71,8 @@ def make_straight_path(val, coords, color_dict, transform_kwargs):
 
     return (
         f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"'
-        f'stroke="{stroke_color}" stroke-linecap="round"'
-        f'stroke-width="{stroke_width}"/>'
+        f' stroke="{stroke_color}" stroke-linecap="round"'
+        f' stroke-width="{stroke_width}"/>'
     )
 
 
@@ -165,12 +165,10 @@ def generate(
 
     with open(f"{filename}.svg", "w+") as text_file:
         text_file.write(
-            f"""
-                <svg
-                    role="img"
-                    viewBox="0 0 {total_height} {total_width}"
-                    xmlns="http://www.w3.org/2000/svg">
-                        {straight_paths + under_swap_paths + over_swap_paths}
-                </svg>
-            """
+            f'<svg role="img" height="{int(total_height)}" width="{int(total_width)}"'
+            f' xmlns="http://www.w3.org/2000/svg">'
+            + straight_paths
+            + under_swap_paths
+            + over_swap_paths
+            + "</svg>\n"
         )
