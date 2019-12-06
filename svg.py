@@ -72,7 +72,7 @@ def make_straight_path(val, coords, color_dict, transform_kwargs):
     return (
         f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"'
         f'stroke="{stroke_color}" stroke-linecap="round"'
-        f'stroke-width="{stroke_width}" />'
+        f'stroke-width="{stroke_width}"/>'
     )
 
 

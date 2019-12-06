@@ -69,15 +69,13 @@ def line_to_svg(pt1, pt2, stroke_width=10, stroke_color="red", stroke_linecap="r
     x1, y1 = pt1
     x2, y2 = pt2
 
-    return f"""
-        <line
-            x1="{round(x1, 4)}" y1="{round(y1, 4)}"
-            x2="{round(x2, 4)}" y2="{round(y2, 4)}"
-            stroke="{stroke_color}"
-            stroke-width="{stroke_width}"
-            stroke-linecap="{stroke_linecap}"
-        />
-    """
+    return (
+        f'<line x1="{round(x1, 4)}" y1="{round(y1, 4)}"'
+        f' x2="{round(x2, 4)}" y2="{round(y2, 4)}"'
+        f' stroke="{stroke_color}"'
+        f' stroke-width="{stroke_width}"'
+        f' stroke-linecap="{stroke_linecap}"/>'
+    )
 
 
 def arc_to_svg(
@@ -86,18 +84,14 @@ def arc_to_svg(
     x1, y1 = pt1
     x2, y2 = pt2
 
-    return f"""
-        <path
-            d="
-                M {round(x1, 4)} {round(y1, 4)}
-                A {round(r, 4)} {round(r, 4)} 0 0 {arc_flag} {round(x2, 4)} {round(y2, 4)}
-            "
-            fill="transparent"
-            stroke="{stroke_color}"
-            stroke-linecap="{stroke_linecap}"
-            stroke-width="{stroke_width}"
-        />
-    """
+    return (
+        f'<path d="M {round(x1, 4)} {round(y1, 4)} A {round(r, 4)}'
+        f' {round(r, 4)} 0 0 {arc_flag} {round(x2, 4)} {round(y2, 4)}"'
+        f' fill="transparent"'
+        f' stroke="{stroke_color}"'
+        f' stroke-linecap="{stroke_linecap}"'
+        f' stroke-width="{stroke_width}"/>'
+    )
 
 
 def choose_tangent_line(tl1, tl2):
