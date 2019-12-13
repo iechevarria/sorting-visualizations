@@ -1,41 +1,31 @@
-import random
+def insertion_sort_history(arr):
+    history = [arr.copy()]
 
-import svg
-
-
-def swap(history, idx1, idx2):
-
-    arr = history[-1].copy()
-    tmp = arr[idx1]
-    arr[idx1] = arr[idx2]
-    arr[idx2] = tmp
-
-    return history + [arr]
-
-
-def insertion_sort(arr):
     i = 1
-
-    while i < len(arr[0]):
+    while i < len(arr):
         j = i
-        while j > 0 and arr[-1][j - 1] > arr[-1][j]:
-            arr = swap(arr, j, j - 1)
+        while j > 0 and arr[j - 1] > arr[j]:
+            arr[j], arr[j - 1] = arr[j - 1], arr[j]
+            history.append(arr.copy())
             j -= 1
         i += 1
 
-    svg.generate(arr, "insertion_sort")
+    return history
 
 
-def bubble_sort(arr):
+def bubble_sort_history(arr):
+    history = [arr.copy()]
+
     flag = True
     while flag:
         flag = False
-        for i in range(len(arr[-1]) - 1):
-            if arr[-1][i] > arr[-1][i + 1]:
-                arr = swap(arr, i, i + 1)
+        for i in range(len(arr) - 1):
+            if arr[i] > arr[i + 1]:
+                arr[i], arr[i + 1] = arr[i + 1], arr[i]
+                history.append(arr.copy())
                 flag = True
 
-    svg.generate(arr, "bubble_sort")
+    return history
 
 
 def partition_lomuto(arr, history, low, high):
@@ -61,10 +51,10 @@ def quicksort_lomuto(arr, history, low, high):
         quicksort_lomuto(arr, history, p + 1, high)
 
 
-def quicksort_lomuto_svg(arr):
+def quicksort_lomuto_history(arr):
     history = [arr.copy()]
     quicksort_lomuto(arr, history, 0, len(arr) - 1)
-    svg.generate(history, "quicksort_lomuto")
+    return history
 
 
 def partition_hoare(arr, history, low, high):
@@ -94,18 +84,7 @@ def quicksort_hoare(arr, history, low, high):
         quicksort_hoare(arr, history, split_index + 1, high)
 
 
-def quicksort_hoare_svg(arr):
+def quicksort_hoare_history(arr):
     history = [arr.copy()]
-    quicksort_hoare(list_to_sort, history, 0, len(arr) - 1)
-    svg.generate(history, "quicksort_hoare")
-
-
-if __name__ == "__main__":
-    list_length = 80
-    list_to_sort = list(range(list_length))
-    random.Random(777).shuffle(list_to_sort)
-
-    insertion_sort([list_to_sort[:20]])
-    bubble_sort([list_to_sort[:20]])
-    quicksort_lomuto_svg(list_to_sort.copy())
-    quicksort_hoare_svg(list_to_sort)
+    quicksort_hoare(arr, history, 0, len(arr) - 1)
+    return history

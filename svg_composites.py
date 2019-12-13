@@ -1,5 +1,7 @@
 import math
 
+import svg_primitives
+
 
 class Circle:
     def __init__(self, x, y, radius):
@@ -56,58 +58,12 @@ def get_tangent_lines(c1, c2):
     return (c1t1, c2t1), (c1t2, c2t2)
 
 
-def circle_to_svg(c):
-    return f"""
-        <circle
-            cx="{c.x}"
-            cy="{c.y}"
-            r="{c.radius}"
-            fill="transparent"
-            stroke="black"
-        />
-    """
-
-
-def make_line_svg(
-    x1, y1, x2, y2, stroke_width=10, stroke_color="red", stroke_linecap="round"
-):
-    return (
-        f'<line x1="{round(x1, 4)}" y1="{round(y1, 4)}"'
-        f' x2="{round(x2, 4)}" y2="{round(y2, 4)}"'
-        f' stroke="{stroke_color}"'
-        f' stroke-width="{stroke_width}"'
-        f' stroke-linecap="{stroke_linecap}"/>'
-    )
-
-
-def make_arc_svg(
-    pt1,
-    pt2,
-    radius,
-    arc_flag,
-    stroke_width=10,
-    stroke_color="red",
-    stroke_linecap="round",
-):
-    x1, y1 = pt1
-    x2, y2 = pt2
-
-    return (
-        f'<path d="M {round(x1, 4)} {round(y1, 4)} A {round(radius, 4)}'
-        f' {round(radius, 4)} 0 0 {arc_flag} {round(x2, 4)} {round(y2, 4)}"'
-        f' fill="transparent"'
-        f' stroke="{stroke_color}"'
-        f' stroke-linecap="{stroke_linecap}"'
-        f' stroke-width="{stroke_width}"/>'
-    )
-
-
 def choose_tangent_line(tl1, tl2):
     # this is pretty hacky but I have luxury of never running into edge cases
     return tl1 if tl1[0] < tl2[0] else tl2
 
 
-def make_double_macaroni_connection_svg(
+def double_macaroni(
     x1,
     y1,
     x2,
@@ -157,43 +113,10 @@ def make_double_macaroni_connection_svg(
     arc_flag = int(a.y > b.y)
 
     return (
-        make_line_svg(*p1, *p2, **{**bg_kwargs, "stroke_linecap": "round"})
-        + make_arc_svg(**arc1_kwargs, **bg_kwargs, arc_flag=arc_flag)
-        + make_arc_svg(**arc2_kwargs, **bg_kwargs, arc_flag=arc_flag)
-        + make_line_svg(*p1, *p2, **fg_kwargs)
-        + make_arc_svg(**arc1_kwargs, **fg_kwargs, arc_flag=arc_flag)
-        + make_arc_svg(**arc2_kwargs, **fg_kwargs, arc_flag=arc_flag)
+        svg_primitives.line(*p1, *p2, **{**bg_kwargs, "stroke_linecap": "round"})
+        + svg_primitives.arc(**arc1_kwargs, **bg_kwargs, arc_flag=arc_flag)
+        + svg_primitives.arc(**arc2_kwargs, **bg_kwargs, arc_flag=arc_flag)
+        + svg_primitives.line(*p1, *p2, **fg_kwargs)
+        + svg_primitives.arc(**arc1_kwargs, **fg_kwargs, arc_flag=arc_flag)
+        + svg_primitives.arc(**arc2_kwargs, **fg_kwargs, arc_flag=arc_flag)
     )
-
-
-if __name__ == "__main__":
-    inner_svg = ""
-    inner_svg += make_double_macaroni_connection_svg(
-        x1=60,
-        y1=60,
-        x2=200,
-        y2=200,
-        radius=50,
-        stroke_width=30,
-        stroke_color="red",
-        stroke_linecap="flat",
-    )
-
-    svg = ""
-    if display_circles:
-        svg = circle_to_svg(a) + circle_to_svg(b)
-
-
-    with open("tangent_test.html", "w+") as text_file:
-        text_file.write(
-            f"""
-                <!DOCTYPE html>
-                <html>
-                <body>
-                <svg width="400" height="400">
-                {inner_svg}
-                </svg>
-                </body>
-                </html>
-            """
-        )

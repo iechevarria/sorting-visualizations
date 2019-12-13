@@ -2,7 +2,8 @@ from itertools import chain
 
 from matplotlib import cm
 
-from macaroni import make_line_svg, make_double_macaroni_connection_svg
+import svg_primitives
+import svg_composites
 
 
 def unnest_svg_list(svg_list):
@@ -25,6 +26,8 @@ def get_color(color_dict, val):
 
 
 def get_swaps_and_straights(history):
+    """Transform history into format more useful for drawing"""
+
     # pad history at the beginning and end to make my life easier
     padded_history = history.copy()
     padded_history.insert(0, padded_history[0])
@@ -74,7 +77,7 @@ def make_straight_path(val, indices, color_dict, transform_kwargs):
     stroke_width = transform_kwargs["line_width"]
     stroke_linecap = "round"
 
-    return make_line_svg(*coords, stroke_width, stroke_color, stroke_linecap)
+    return svg_primitives.line(*coords, stroke_width, stroke_color, stroke_linecap)
 
 
 def make_swap_path(
@@ -89,7 +92,7 @@ def make_swap_path(
     curve_radius = min_curve_radius + curve_radius_delta / distance
     stroke_width = transform_kwargs["line_width"]
 
-    return make_double_macaroni_connection_svg(
+    return svg_composites.double_macaroni(
         x1,
         y1,
         x2,
@@ -138,6 +141,7 @@ def generate(
 ):
 
     # set up some params
+    final_state = history[-1]
     y_offset = line_width / 2
     transform_kwargs = {
         "spacing": spacing,
@@ -146,7 +150,7 @@ def generate(
         "y_offset": y_offset,
     }
 
-    # compute curve stuff
+    # compute curve params
     min_curve_radius = (line_height - line_width) / min_curve_radius_denominator
     curve_kwargs = {
         "min_curve_radius": min_curve_radius,
@@ -154,10 +158,15 @@ def generate(
     }
 
     # set up colors
-    color_dict = get_color_dict(history[-1])
+    color_dict = get_color_dict(final_state)
 
     # get path histories
     swaps, straights = get_swaps_and_straights(history)
+
+    # compute svg dimensions
+    num_vals = len(final_state)
+    total_width = (num_vals) * spacing + num_vals * line_width
+    total_height = (len(history) + 1) * line_height + 2 * y_offset
 
     # actually make the svgs
     swap_kwargs = {
@@ -166,14 +175,10 @@ def generate(
         "transform_kwargs": transform_kwargs,
         "curve_kwargs": curve_kwargs,
     }
+    # ensure that left-right swaps render over right-left swaps
     under_swap_paths = make_swap_paths(mode="under", **swap_kwargs)
     over_swap_paths = make_swap_paths(mode="over", **swap_kwargs)
     straight_paths = make_straight_paths(straights, color_dict, transform_kwargs)
-
-    # compute svg dimensions
-    num_vals = len(history[0])
-    total_width = (num_vals) * spacing + num_vals * line_width
-    total_height = (len(history) + 1) * line_height + 2 * y_offset
 
     with open(f"{filename}.svg", "w+") as text_file:
         text_file.write(
@@ -184,3 +189,14 @@ def generate(
             + over_swap_paths
             + "</svg>\n"
         )
+
+
+if __name__ == "__main__":
+    import random
+    import sorting
+
+    list_length = 80
+    list_to_sort = list(range(list_length))
+    random.Random(777).shuffle(list_to_sort)
+
+    generate(sorting.quicksort_hoare_history(list_to_sort), "quicksort_hoare")
